@@ -530,6 +530,11 @@ useDataAction({
       setTimeout(() => document.addEventListener('click', close), 0);
     },
 
+    voiceInput() {
+      // TODO: 接入语音输入功能
+      console.log('voiceInput triggered — placeholder for future implementation');
+    },
+
     uploadFile() {
       const input = document.createElement('input');
       input.type = 'file';
