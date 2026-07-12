@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Chat — Terminal</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f8f0;
+    --text: #1a1a1a;
+    --text-dim: #888;
+    --accent: #333;
+    --border: #ccc;
+    --tab-bg: #e8e8e0;
+    --tab-active-bg: #f8f8f0;
+    --tab-active-border: #333;
+    --output-text: #1a1a1a;
+    --prefix-user: #005f00;
+    --prefix-ai: #8b5e00;
+    --prompt-color: #555;
+    --input-bg: #f8f8f0;
+    --input-text: #1a1a1a;
+    --cursor: #333;
+    --font: 'Courier New', 'Source Code Pro', 'Fira Code', monospace;
+    --font-size: 14px;
+    --line-height: 1.6;
+  }
+
+  [data-theme="dark"] {
+    --bg: #0a0a0a;
+    --text: #0f0;
+    --text-dim: #0a0;
+    --accent: #0f0;
+    --border: #1a3a1a;
+    --tab-bg: #0f0f0f;
+    --tab-active-bg: #0a0a0a;
+    --tab-active-border: #0f0;
+    --output-text: #0c0;
+    --prefix-user: #0f0;
+    --prefix-ai: #ff0;
+    --prompt-color: #0a0;
+    --input-bg: #0a0a0a;
+    --input-text: #0f0;
+    --cursor: #0f0;
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: var(--font-size);
+    color: var(--text);
+    background: var(--bg);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .terminal {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 12px 16px;
+    gap: 0;
+  }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    border-bottom: 2px solid var(--tab-active-border);
+    padding-bottom: 0;
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+  .tab-bar::-webkit-scrollbar { height: 2px; }
+  .tab-bar::-webkit-scrollbar-thumb { background: var(--text-dim); }
+
+  /* sessionList rendered by shared.js */
+  .session-list {
+    display: flex;
+    gap: 0;
+  }
+  .session-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 2px solid var(--border);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    margin-right: -2px;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text-dim);
+    background: var(--tab-bg);
+    white-space: nowrap;
+    transition: color .15s, background .15s;
+  }
+  .session-item:hover { color: var(--text); }
+  .session-item.active {
+    background: var(--tab-active-bg);
+    color: var(--output-text);
+    border-color: var(--tab-active-border);
+    font-weight: bold;
+  }
+  .session-title { overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+  .btn-del {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 0 2px;
+    line-height: 1;
+  }
+  .btn-del:hover { color: #f44; }
+
+  .tab-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: 4px;
+    padding-bottom: 4px;
+  }
+  .tab-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); border-color: var(--accent); }
+  .tab-search {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--input-text);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 3px 6px;
+    width: 100px;
+    outline: none;
+    border-radius: 2px;
+  }
+  .tab-search:focus { border-color: var(--accent); }
+  .tab-search::placeholder { color: var(--text-dim); }
+
+  /* ── Output area ── */
+  .output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .output::-webkit-scrollbar { width: 4px; }
+  .output::-webkit-scrollbar-thumb { background: var(--text-dim); }
+
+  /* Messages rendered by shared.js as .msg > .bubble + .time */
+  .msg {
+    display: flex;
+    gap: 0;
+    line-height: var(--line-height);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg .time { order: 1; color: var(--text-dim); margin-right: 8px; white-space: nowrap; flex-shrink: 0; font-size: 12px; opacity: .7; }
+  .msg .bubble { order: 2; display: inline; color: var(--output-text); }
+  .msg.user::before { content: '[you] '; color: var(--prefix-user); flex-shrink: 0; order: 0; margin-right: 2px; font-weight: bold; }
+  .msg.assistant::before { content: '[ai]  '; color: var(--prefix-ai); flex-shrink: 0; order: 0; margin-right: 2px; font-weight: bold; }
+
+  /* ── Welcome ── */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12px 0;
+    gap: 12px;
+  }
+  .welcome-banner {
+    color: var(--accent);
+    white-space: pre;
+    font-size: 12px;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .welcome-line { color: var(--text-dim); }
+  .quick-questions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .quick-q {
+    color: var(--text-dim);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-style: dotted;
+    transition: color .15s;
+  }
+  .quick-q:hover { color: var(--accent); }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .status-bar select {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--input-text);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 2px 6px;
+    cursor: pointer;
+    outline: none;
+    border-radius: 2px;
+  }
+  .status-bar select:focus { border-color: var(--accent); }
+  .status-sep { color: var(--border); }
+  .file-tag { color: var(--prefix-ai); }
+
+  /* ── Command line ── */
+  .cmd-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .prompt {
+    color: var(--prompt-color);
+    font-weight: bold;
+    font-size: 16px;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .cmd-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--input-text);
+    font-family: var(--font);
+    font-size: 14px;
+    outline: none;
+    caret-color: var(--cursor);
+  }
+  .cmd-input::placeholder { color: var(--text-dim); }
+  .cmd-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+  }
+  .cmd-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .typing-indicator { color: var(--prefix-ai); font-size: 12px; padding: 2px 0; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="terminal" id="app">
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <div class="session-list" data-ref="sessionList"></div>
+    <div class="tab-actions">
+      <button class="tab-btn" data-action="newSession" title="New tab">+</button>
+      <input class="tab-search" data-ref="searchInput" type="text" placeholder="filter...">
+    </div>
+  </div>
+
+  <!-- Output -->
+  <div class="output" data-ref="chatMessages"></div>
+
+  <!-- Welcome -->
+  <div class="welcome" data-ref="welcomeScreen">
+    <pre class="welcome-banner">
+  █████╗ ██╗     ██████╗██╗  ██╗ █████╗ ████████╗
+ ██╔══██╗██║    ██╔════╝██║  ██║██╔══██╗╚══██╔══╝
+ ███████║██║    ██║     ███████║███████║   ██║
+ ██╔══██║██║    ██║     ██╔══██║██╔══██║   ██║
+ ██║  ██║██║    ╚██████╗██║  ██║██║  ██║   ██║
+ ╚═╝  ╚═╝╚═╝     ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝
+    </pre>
+    <div class="welcome-line">Type your message at the prompt below and press Enter.</div>
+    <div class="quick-questions">
+      <span class="quick-q" data-action="quickQuestion">Write JavaScript code</span>
+      <span class="quick-q" data-action="quickQuestion">Explain RESTful API</span>
+      <span class="quick-q" data-action="quickQuestion">Optimize frontend performance</span>
+      <span class="quick-q" data-action="quickQuestion">Recommend VS Code plugins</span>
+    </div>
+  </div>
+
+  <!-- Typing indicator -->
+  <div class="typing-indicator" data-ref="typingIndicator">▌ processing...</div>
+
+  <!-- Command line -->
+  <div class="cmd-line">
+    <span class="prompt">&gt;</span>
+    <input class="cmd-input" data-ref="chatInput" type="text" placeholder="type your message..." autofocus>
+    <span class="file-tag" data-ref="fileLabel"></span>
+    <button class="cmd-btn" data-action="uploadFile">[attach]</button>
+    <input type="file" hidden data-ref="fileInput">
+    <button class="cmd-btn" data-action="sendMessage">[send]</button>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>model:</span>
+    <select data-ref="modelSelector" data-action="switchModel">
+      <option>GPT-4o</option>
+      <option>Claude 3.5</option>
+      <option>Gemini Pro</option>
+    </select>
+    <span class="status-sep">|</span>
+    <button class="cmd-btn" data-action="toggleTheme">[*] theme</button>
+    <span class="status-sep">|</span>
+    <button class="cmd-btn" data-action="clearMessages">[clear]</button>
+    <span class="status-sep">|</span>
+    <span>↑ Enter to send</span>
+  </div>
+
+</div>
+
+<script type="module">
+import { init } from './shared.js';
+init(document.getElementById('app'));
+</script>
+
+</body>
+</html>

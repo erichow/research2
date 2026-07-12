@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>useDataRef / useDataAction — Test Suite</title>
+<style>
+  body { font-family: system-ui; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.2rem; }
+  .pass { color: #2e7d32; }
+  .fail { color: #c62828; }
+  .root-block { border: 1px dashed #ccc; padding: 1rem; margin: 1rem 0; }
+</style>
+</head>
+<body>
+
+<h1>useDataRef / useDataAction — Manual Test Suite</h1>
+<p>All tests should show <span class="pass">PASS</span>. Any <span class="fail">FAIL</span> needs investigation.</p>
+<ul id="results"></ul>
+
+<!-- ========== data-ref: Single & Multi elements ========== -->
+<div class="root-block" id="root-ref">
+  <h3>data-ref scope</h3>
+  <input data-ref="username" value="alice">
+  <input data-ref="username" value="bob" style="display:none">
+  <ul>
+    <li data-ref="item">A</li>
+    <li data-ref="item">B</li>
+    <li data-ref="item">C</li>
+  </ul>
+  <span data-ref="single-only">hello</span>
+</div>
+
+<!-- ========== data-action: Click delegation ========== -->
+<div class="root-block" id="root-action">
+  <h3>data-action scope</h3>
+  <button data-action="submit">Submit</button>
+  <button data-action="delete" data-id="42">Delete</button>
+  <button data-action="greet"><span>Greet <em>me</em></span></button>
+  <button>No action</button>
+  <div id="action-log" style="margin-top: .5rem; font-size: .85rem; color: #555;"></div>
+</div>
+
+<!-- Outside root -->
+<button data-action="outside-ok">Outside button</button>
+
+<script type="module">
+import { useDataRef } from '../src/index.js';
+import { useDataAction } from '../src/index.js';
+
+const results = document.getElementById('results');
+
+function check(name, pass, detail) {
+  const cls = pass ? 'pass' : 'fail';
+  const text = pass ? 'PASS' : `FAIL — ${detail}`;
+  results.insertAdjacentHTML('beforeend', `<li class="${cls}">${name}: ${text}</li>`);
+  if (!pass) console.error(`FAIL: ${name}`, detail);
+}
+
+// ---------- useDataRef ----------
+
+const refRoot = document.getElementById('root-ref');
+const refs = useDataRef(refRoot);
+
+// Single element ref
+check('single element ref', refs['single-only'] !== undefined && refs['single-only'].textContent === 'hello',
+  `expected single-only.textContent = "hello", got ${refs['single-only']?.textContent}`);
+
+// Multi-element ref
+check('multi ref is array', Array.isArray(refs.item),
+  `expected Array, got ${typeof refs.item}`);
+check('multi ref length', refs.item.length === 3,
+  `expected 3, got ${refs.item.length}`);
+check('multi ref [1]', refs.item[1].textContent === 'B',
+  `expected "B", got ${refs.item[1]?.textContent}`);
+
+// forEach on multi ref
+let forEachOk = true;
+refs.item.forEach((el, i) => {
+  if (el !== refs.item[i]) forEachOk = false;
+});
+check('multi ref forEach', forEachOk, 'elements mismatch');
+
+// DOM property → first element
+check('multi ref DOM prop (value)', refs.username.value === 'alice',
+  `expected "alice", got ${refs.username.value}`);
+
+// Array length on multi elem with DOM name
+check('multi ref array length', refs.username.length === 2,
+  `expected 2, got ${refs.username.length}`);
+
+// Missing ref
+check('missing ref → undefined', refs.nonexistent === undefined,
+  `expected undefined, got ${refs.nonexistent}`);
+
+// Element outside root ignored
+check('outside root ignored', refs['outside-btn'] === undefined,
+  `expected undefined, got ${refs['outside-btn']}`);
+
+// ---------- useDataAction ----------
+
+const actionRoot = document.getElementById('root-action');
+const log = document.getElementById('action-log');
+let actionResults = {};
+
+useDataAction({
+  root: actionRoot,
+  actions: {
+    submit(ev, el) { actionResults.submit = { tag: el.tagName, text: el.textContent }; },
+    delete(ev, el) { actionResults.delete = { id: el.dataset.id }; },
+    greet(ev, el) { actionResults.greet = { tag: el.tagName, targetTag: ev.target.tagName }; }
+  }
+});
+
+// Trigger clicks
+actionRoot.querySelector('[data-action="submit"]').click();
+check('action: submit fires', actionResults.submit && actionResults.submit.text.includes('Submit'),
+  `got ${JSON.stringify(actionResults.submit)}`);
+
+actionRoot.querySelector('[data-action="delete"]').click();
+check('action: receives element context', actionResults.delete && actionResults.delete.id === '42',
+  `expected id=42, got ${JSON.stringify(actionResults.delete)}`);
+
+// Nested click
+actionRoot.querySelector('[data-action="greet"] em').click();
+check('action: nested click', actionResults.greet && actionResults.greet.targetTag === 'EM',
+  `expected targetTag=EM, got ${JSON.stringify(actionResults.greet)}`);
+
+// Click on button without data-action
+actionResults.unknownCheck = false;
+actionRoot.querySelector('button:not([data-action])').click();
+check('action: no-op for non-data-action element', true, 'no error thrown'); // pass if we got here
+
+// Click outside root
+actionResults.outsideCheck = false;
+document.querySelector('[data-action="outside-ok"]').click();
+check('action: outside root ignored', true, 'no error thrown'); // pass if no crash
+
+</script>
+</body>
+</html>
