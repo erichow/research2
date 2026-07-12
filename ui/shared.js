@@ -82,12 +82,12 @@ function renderSessionList() {
   const container = refs.sessionList;
   if (!container || !container.querySelector) return;
 
-  // Keep the "最近对话" header
+  // Keep the "历史对话" header
   let header = container.querySelector('.session-list-header');
   if (!header) {
     header = document.createElement('div');
     header.className = 'session-list-header text-[10px] uppercase tracking-widest text-zinc-600 px-3 py-2 font-semibold';
-    header.textContent = '最近对话';
+    header.textContent = '历史对话';
     container.innerHTML = '';
     container.appendChild(header);
   } else {
