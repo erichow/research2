@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  * { font-family: 'Inter', system-ui, sans-serif; }
+
+  /* ── Theme Colors ── */
+  [data-theme="light"] {
+    --bg-body: #f5f3ee;
+    --bg-sidebar: #ffffff;
+    --bg-chat: #faf9f6;
+    --bg-input: #ffffff;
+    --bg-msg-user: #eeeffa;
+    --bg-msg-ai: transparent;
+    --bg-hover: #f0efe9;
+    --bg-active: #f0f0fa;
+    --bg-search: #f6f5f2;
+    --bg-dropdown: #ffffff;
+    --bg-code: #f6f5f2;
+    --bg-code-header: #f0efe9;
+    --bg-model-badge: rgba(99,102,241,0.1);
+    --bg-chip: #f6f5f2;
+    --bg-message-count: #f0efe9;
+    --bg-quick-btn: #f0efe9;
+    --bg-model-selector: #ffffff;
+
+    --text-primary: #1c1c1a;
+    --text-secondary: #5a5954;
+    --text-muted: #9a9892;
+    --text-muted2: #a8a69f;
+    --text-placeholder: #b0aea7;
+    --text-dim: #c0bdb6;
+    --text-icon-hover: #4a4945;
+    --text-model: #6b6a64;
+    --text-model-badge: #4f46e5;
+    --text-quick-btn: #5a5954;
+    --text-quick-btn-hover: #4f46e5;
+
+    --border-sidebar: #e5e3dd;
+    --border-input: #d6d4ce;
+    --border-msg-user: #d9dbf2;
+    --border-msg-ai: transparent;
+    --border-search: #d6d4ce;
+    --border-dropdown: #e0ded8;
+    --border-code: #e0ded8;
+    --border-code-header: #e0ded8;
+    --border-model-badge: rgba(99,102,241,0.2);
+    --border-chip: #d6d4ce;
+    --border-message-count: #e0ded8;
+    --border-quick-btn: #d6d4ce;
+
+    --shadow-msg-ai: none;
+    --shadow-dropdown: 0 8px 24px rgba(0,0,0,0.08);
+    --shadow-glow-dot: 0 0 8px rgba(34,197,94,0.5);
+    --shadow-btn-primary-hover: 0 4px 20px rgba(99,102,241,0.25);
+
+    --scrollbar-thumb: #d4d2cc;
+    --icon-muted: #a8a69f;
+    --input-focus-ring: rgba(99,102,241,0.12);
+    --indigo-text: #4f46e5;
+    --indigo-text-hover: #4338ca;
+  }
+
+  [data-theme="dark"] {
+    --bg-body: #0f0f0f;
+    --bg-sidebar: #0a0a0a;
+    --bg-chat: #0f0f0f;
+    --bg-input: #0a0a0a;
+    --bg-msg-user: #1a1a2e;
+    --bg-msg-ai: transparent;
+    --bg-hover: #1a1a1a;
+    --bg-active: #1a1a2e;
+    --bg-search: #111111;
+    --bg-dropdown: #0a0a0a;
+    --bg-code: #111111;
+    --bg-code-header: #111111;
+    --bg-model-badge: rgba(99,102,241,0.15);
+    --bg-chip: #111111;
+    --bg-message-count: #111111;
+    --bg-quick-btn: #111111;
+    --bg-model-selector: #111111;
+
+    --text-primary: #e4e4e7;
+    --text-secondary: #d4d4d8;
+    --text-muted: #a1a1aa;
+    --text-muted2: #71717a;
+    --text-placeholder: #52525b;
+    --text-dim: #3f3f46;
+    --text-icon-hover: #d4d4d8;
+    --text-model: #a1a1aa;
+    --text-model-badge: #a5b4fc;
+    --text-quick-btn: #d4d4d8;
+    --text-quick-btn-hover: #a5b4fc;
+
+    --border-sidebar: #1f1f1f;
+    --border-input: #1f1f1f;
+    --border-msg-user: #2a2a4a;
+    --border-msg-ai: transparent;
+    --border-search: #1f1f1f;
+    --border-dropdown: #1f1f1f;
+    --border-code: #222222;
+    --border-code-header: #222222;
+    --border-model-badge: rgba(99,102,241,0.25);
+    --border-chip: #222222;
+    --border-message-count: #1f1f1f;
+    --border-quick-btn: #222222;
+
+    --shadow-msg-ai: none;
+    --shadow-dropdown: none;
+    --shadow-glow-dot: 0 0 8px rgba(34,197,94,0.6);
+    --shadow-btn-primary-hover: 0 4px 20px rgba(99,102,241,0.3);
+
+    --scrollbar-thumb: #333333;
+    --icon-muted: #71717a;
+    --input-focus-ring: rgba(99,102,241,0.15);
+    --indigo-text: #a5b4fc;
+    --indigo-text-hover: #c7d2fe;
+  }
+
+  body { background: var(--bg-body); color: var(--text-primary); transition: background .2s, color .2s; }
+
+  .sidebar { background: var(--bg-sidebar); border-right: 1px solid var(--border-sidebar); transition: background .2s, border-color .2s; }
+  .chat-area { background: var(--bg-chat); transition: background .2s; }
+
+  .input-bar { background: var(--bg-input); border: 1px solid var(--border-input); transition: background .2s, border-color .2s; }
+  .input-bar:focus-within { border-color: #6366f1; box-shadow: 0 0 0 3px var(--input-focus-ring); }
+
+
+  .msg-user { background: var(--bg-msg-user); border: 1px solid var(--border-msg-user); box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+  .msg-ai { background: var(--bg-msg-ai); border: 1px solid var(--border-msg-ai); box-shadow: var(--shadow-msg-ai); }
+
+  .conversation-item { transition: all 0.15s; }
+  .conversation-item:hover { background: var(--bg-hover); }
+  .conversation-item.active { background: var(--bg-active); border-left: 2px solid #6366f1; }
+
+  .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); transition: all 0.2s; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-btn-primary-hover); }
+
+  .glow-dot { box-shadow: var(--shadow-glow-dot); }
+  .code-block { background: var(--bg-code); border: 1px solid var(--border-code); border-radius: 10px; transition: background .2s, border-color .2s; }
+  .code-block-header { background: var(--bg-code-header); border-bottom: 1px solid var(--border-code-header); }
+
+  .typing-dot { animation: bounce 1.4s infinite both; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce { 0%,80%,100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
+
+  .model-badge { background: var(--bg-model-badge); color: var(--text-model-badge); border: 1px solid var(--border-model-badge); }
+  .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; }
+  .msg-delete { opacity: 0; transition: opacity 0.15s; }
+  .conversation-item:hover .msg-delete { opacity: 1; }
+  .session-delete-btn { opacity: 0; transition: opacity 0.15s; }
+  .conversation-item:hover .session-delete-btn { opacity: 1; }
+  .search-input { background: var(--bg-search); border: 1px solid var(--border-search); }
+  .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px var(--input-focus-ring); }
+  .model-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; min-width: 180px; background: var(--bg-dropdown); border: 1px solid var(--border-dropdown); border-radius: 12px; padding: 4px; z-index: 50; box-shadow: var(--shadow-dropdown); }
+  .model-dropdown.open { display: block; }
+  .model-option { padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.1s; }
+  .model-option:hover { background: var(--bg-hover); }
+  .model-option.active { background: rgba(99,102,241,0.15); color: var(--text-model-badge); }
+  .file-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--bg-chip); border: 1px solid var(--border-chip); border-radius: 8px; font-size: 12px; }
+
+  /* Theme toggle icon — ☀ in dark mode (shows sun to switch to light), ☾ in light mode */
+  .theme-icon-sun { display: none; }
+  .theme-icon-moon { display: inline; }
+  [data-theme="light"] .theme-icon-sun { display: inline; }
+  [data-theme="light"] .theme-icon-moon { display: none; }
+  [data-theme="dark"] .theme-icon-sun { display: none; }
+  [data-theme="dark"] .theme-icon-moon { display: inline; }
+</style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="sidebar w-72 flex flex-col h-full shrink-0">
+  <!-- Logo -->
+  <div class="px-5 py-4 border-b flex items-center gap-3" style="border-color:var(--border-sidebar);">
+    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+      <i class="fa-solid fa-wand-magic-sparkles text-white text-sm"></i>
+    </div>
+    <span class="font-semibold text-base" style="color:var(--text-primary)">Nexus AI</span>
+    <span class="model-badge text-[10px] px-2 py-0.5 rounded-full font-medium ml-auto">Pro</span>
+  </div>
+
+  <!-- New Chat -->
+  <div class="px-4 py-3">
+    <button data-action="newSession" class="btn-primary w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 text-white">
+      <i class="fa-solid fa-plus text-xs"></i> 新建对话
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="px-3 pb-2">
+    <div class="search-input flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
+      <i class="fa-solid fa-magnifying-glass text-xs" style="color:var(--icon-muted)"></i>
+      <input data-ref="searchInput" data-action="searchSession" type="text" placeholder="搜索对话..." class="bg-transparent text-sm outline-none flex-1" style="color:var(--text-primary); --tw-placeholder-color:var(--text-placeholder)">
+    </div>
+  </div>
+
+  <!-- Conversations -->
+  <nav data-ref="sessionList" class="flex-1 overflow-y-auto px-3 space-y-0.5">
+    <div class="text-[10px] uppercase tracking-widest px-3 py-2 font-semibold" style="color:var(--text-muted)">最近对话</div>
+    <!-- 初始会话由 JS 动态渲染 -->
+  </nav>
+
+  <!-- User -->
+  <div class="border-t p-4" style="border-color:var(--border-sidebar);">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">M</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium truncate" style="color:var(--text-primary)">Max Chen</div>
+        <div class="text-[11px]" style="color:var(--text-muted)">Free Plan</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Chat -->
+<main class="flex-1 flex flex-col h-full min-w-0 chat-area">
+
+  <!-- Header -->
+  <header class="px-6 py-4 border-b flex items-center justify-between shrink-0" style="border-color:var(--border-sidebar);">
+    <div class="flex items-center gap-3">
+      <h1 data-ref="sessionTitle" class="text-sm font-semibold" style="color:var(--text-primary)">React 组件设计讨论</h1>
+      <span data-ref="messageCount" class="text-[10px] px-2 py-0.5 rounded-md border" style="color:var(--text-muted); background:var(--bg-message-count); border-color:var(--border-message-count);">0 条消息</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button data-action="toggleTheme" class="w-8 h-8 rounded-lg flex items-center justify-center transition-all" style="color:var(--text-muted2);" title="切换主题">
+        <i class="fa-regular fa-sun theme-icon-sun text-sm"></i>
+        <i class="fa-regular fa-moon theme-icon-moon text-sm"></i>
+      </button>
+      <div data-ref="modelSelector" data-action="switchModel" class="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer text-xs" style="background:var(--bg-model-selector); border-color:var(--border-dropdown);">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-500 glow-dot"></span>
+        <span style="color:var(--text-model)">deepseek-v4</span>
+        <i class="fa-solid fa-chevron-down text-[9px] ml-1" style="color:var(--icon-muted)"></i>
+        <!-- Model Dropdown -->
+      </div>
+      <button data-action="clearMessages" class="w-8 h-8 rounded-lg flex items-center justify-center transition-all" style="color:var(--text-muted2);" title="清空对话">
+        <i class="fa-regular fa-trash-can text-sm"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Messages Area + Welcome Screen (共享同一 flex-1 空间) -->
+  <div class="flex-1 overflow-y-auto px-6 py-6 relative" data-ref="chatMessages">
+    <!-- 欢迎覆盖层（无消息时显示，绝对定位居中） -->
+    <div data-ref="welcomeScreen" class="absolute inset-0 flex flex-col items-center justify-center px-6" style="display:none">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/20">
+        <i class="fa-solid fa-wand-magic-sparkles text-white text-xl"></i>
+      </div>
+      <h2 class="text-xl font-semibold mb-2" style="color:var(--text-primary)">有什么我可以帮你的？</h2>
+      <p class="text-sm mb-8 max-w-md" style="color:var(--text-muted)">我可以帮你写代码、回答问题、分析数据……试试下面这些快捷提问</p>
+      <div class="flex flex-wrap gap-2 justify-center max-w-lg">
+        <button data-action="quickQuestion" data-question="帮我写一个 React Hook 处理表单验证" class="text-xs px-4 py-2 rounded-xl border transition-all" style="background:var(--bg-quick-btn); border-color:var(--border-quick-btn); color:var(--text-quick-btn);">
+          <i class="fa-solid fa-code mr-1.5" style="color:var(--indigo-text)"></i>React Hook 表单验证
+        </button>
+        <button data-action="quickQuestion" data-question="解释一下 JavaScript 闭包和闭包的应用场景" class="text-xs px-4 py-2 rounded-xl border transition-all" style="background:var(--bg-quick-btn); border-color:var(--border-quick-btn); color:var(--text-quick-btn);">
+          <i class="fa-solid fa-lightbulb mr-1.5 text-amber-500"></i>JS 闭包详解
+        </button>
+        <button data-action="quickQuestion" data-question="用 Python 写一个快速排序，加上注释" class="text-xs px-4 py-2 rounded-xl border transition-all" style="background:var(--bg-quick-btn); border-color:var(--border-quick-btn); color:var(--text-quick-btn);">
+          <i class="fa-solid fa-terminal mr-1.5 text-green-500"></i>Python 快排
+        </button>
+        <button data-action="quickQuestion" data-question="帮我分析这段代码的性能问题" class="text-xs px-4 py-2 rounded-xl border transition-all" style="background:var(--bg-quick-btn); border-color:var(--border-quick-btn); color:var(--text-quick-btn);">
+          <i class="fa-solid fa-gauge-high mr-1.5 text-rose-500"></i>代码性能分析
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Typing Indicator (hidden by default) -->
+  <div data-ref="typingIndicator" class="flex gap-4 px-6 py-2" style="display:none">
+    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+      <i class="fa-solid fa-wand-magic-sparkles text-white text-[10px]"></i>
+    </div>
+    <div class="flex items-center gap-1.5 py-3">
+      <span class="typing-dot w-2 h-2 rounded-full inline-block" style="background:var(--text-muted2)"></span>
+      <span class="typing-dot w-2 h-2 rounded-full inline-block" style="background:var(--text-muted2)"></span>
+      <span class="typing-dot w-2 h-2 rounded-full inline-block" style="background:var(--text-muted2)"></span>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="px-6 pb-5 shrink-0">
+    <div class="input-bar rounded-2xl px-4 py-3 flex items-end gap-3">
+      <button data-action="uploadFile" class="transition-colors shrink-0 mb-0.5" style="color:var(--icon-muted);" title="上传文件">
+        <i class="fa-solid fa-paperclip text-sm"></i>
+      </button>
+      <div data-ref="filePreview" class="hidden flex gap-2 flex-wrap"></div>
+      <textarea 
+        data-ref="chatInput"
+        rows="1" 
+        placeholder="输入消息... (Enter 发送, Shift+Enter 换行)" 
+        class="flex-1 bg-transparent resize-none text-sm outline-none py-1 max-h-32" style="color:var(--text-primary); --tw-placeholder-color:var(--text-placeholder)"
+      ></textarea>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button data-action="sendMessage" class="btn-primary w-9 h-9 rounded-xl flex items-center justify-center text-white ml-1">
+          <i class="fa-solid fa-arrow-up text-sm"></i>
+        </button>
+      </div>
+    </div>
+    <div class="text-[10px] text-center mt-2" style="color:var(--text-dim)">Nexus AI · 基于语义契约构建</div>
+  </div>
+
+</main>
+
+<!-- Hidden file input for upload -->
+<input type="file" data-ref="fileInput" style="display:none" multiple>
+
+<script type="module" src="shared.js"></script>
+</body>
+</html>
