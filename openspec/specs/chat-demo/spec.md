@@ -85,6 +85,13 @@
 
 - **WHEN** 用户触发主题切换操作
 - **THEN** 页面配色 SHALL 在亮色和暗色之间切换
+- **AND** 主题切换按钮图标 SHALL 跟随变化（暗色显示月亮 ☾，亮色显示太阳 ☀）
+
+#### Scenario: Theme persistence
+
+- **WHEN** 用户切换主题后刷新页面
+- **THEN** 页面 SHALL 保持切换后的主题
+- **AND** 主题偏好 SHALL 存储在 localStorage 中
 
 ### Requirement: Model selector
 
@@ -106,12 +113,19 @@
 - **THEN** 文件名 SHALL 显示在输入区域附近
 - **AND** 下一条发送的消息 SHALL 引用该文件
 
-### Requirement: Two design variants sharing one JS
+### Requirement: Single-file deployment with theme switching
 
-两份设计稿 SHALL 使用同一份 `demo/shared.js`，所有交互行为完全一致。
+整个应用 SHALL 通过一个 HTML 文件交付，亮色/暗色由主题切换控制，不再需要两份独立的 HTML。
 
-#### Scenario: Same JS drives both variants
+#### Scenario: Single file with CSS variables
 
-- **WHEN** `shared.js` 在两份 HTML 中以 `<script type="module">` 加载
+- **WHEN** 用户打开 `ai-assistant.html`
+- **THEN** 页面 SHALL 默认以暗色主题渲染
+- **AND** 所有主题色 SHALL 通过 CSS 自定义属性（`--color-*`）定义在 `[data-theme]` 下
+- **AND** 页面结构、字体图标库、Tailwind 加载方式 SHALL 保持不变
+
+#### Scenario: JS decoupled from DOM structure
+
+- **WHEN** `shared.js` 在 HTML 中以 `<script type="module">` 加载
 - **THEN** 所有交互功能（发送消息、切换会话、搜索、主题切换等）SHALL 正常工作
 - **AND** `shared.js` 中 SHALL 不包含对特定 DOM 结构或 CSS 选择器的假设
