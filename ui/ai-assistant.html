@@ -245,7 +245,7 @@
   </header>
 
   <!-- Messages Area + Welcome Screen (共享同一 flex-1 空间) -->
-  <div class="flex-1 overflow-y-auto px-6 py-6 relative" data-ref="chatMessages">
+  <div class="flex-1 overflow-y-auto px-4 py-6 relative" data-ref="chatMessages">
     <!-- 欢迎覆盖层（无消息时显示，绝对定位居中） -->
     <div data-ref="welcomeScreen" class="absolute inset-0 flex flex-col items-center justify-center px-6" style="display:none">
       <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-5 shadow-lg shadow-indigo-500/20">
@@ -283,8 +283,8 @@
   </div>
 
   <!-- Input -->
-  <div class="px-6 pb-5 shrink-0">
-    <div class="input-bar rounded-2xl px-4 py-3 flex items-end gap-3">
+  <div class="px-4 pb-3 shrink-0">
+    <div class="input-bar max-w-3xl mx-auto rounded-2xl px-4 py-3 flex items-end gap-3">
       <div class="flex items-center gap-1 shrink-0">
         <button data-action="uploadFile" class="transition-colors shrink-0 mb-0.5 px-1" style="color:var(--icon-muted);" title="上传文件">
           <i class="fa-solid fa-paperclip text-sm"></i>
