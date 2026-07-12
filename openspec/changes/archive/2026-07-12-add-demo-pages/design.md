@@ -23,7 +23,7 @@
 
 ### 1. CSS 变量实现主题切换
 
-**选择**：所有颜色定义为 CSS 自定义属性（`--bg`, `--text`, `--sidebar-bg`…），通过 `[data-theme="dark"]` 选择器切换。
+**选择**：所有颜色定义为 CSS 自定义属性（`--bg`, `--text`, `--panel-bg`…），通过 `[data-theme="dark"]` 选择器切换。
 
 **理由**：一份 JS 只需 toggle `document.documentElement.dataset.theme`，两份 HTML 各自定义自己的配色变量。零 JS 侵入样式。
 

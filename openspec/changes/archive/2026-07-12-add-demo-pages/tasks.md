@@ -18,7 +18,7 @@
 
 ## 3. Design Variant: v1 (豆包风格)
 
-- [x] 3.1 Create `demo/v1.html` with full layout (left sidebar + right chat area)
+- [x] 3.1 Create `demo/v1.html` with full layout (dual-panel: session panel + chat panel)
 - [x] 3.2 Style in 豆包-inspired design language (rounded bubbles, gradient accents, specific color palette)
 - [x] 3.3 Include all required data-ref elements (sessionList, chatMessages, chatInput, searchInput, typingIndicator, welcomeScreen, modelSelector)
 - [x] 3.4 Include all required data-action elements (sendMessage, selectSession, newSession, deleteSession, searchSession, clearMessages, quickQuestion, switchModel, uploadFile)
