@@ -184,6 +184,17 @@ function createMessageEl(msg) {
           </button>
         `).join('')}
       </div>
+      <div class="flex items-center gap-0.5 msg-actions">
+        <button data-action="copyMessage" class="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-[var(--bg-hover)]" style="color:var(--text-muted2);" title="复制">
+          <i class="fa-regular fa-copy text-xs"></i>
+        </button>
+        <button data-action="likeMessage" class="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-[var(--bg-hover)]" style="color:var(--text-muted2);" title="赞">
+          <i class="fa-regular fa-thumbs-up text-xs"></i>
+        </button>
+        <button data-action="dislikeMessage" class="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:bg-[var(--bg-hover)]" style="color:var(--text-muted2);" title="踩">
+          <i class="fa-regular fa-thumbs-down text-xs"></i>
+        </button>
+      </div>
     </div>`;
 
   // Fill content then format any code blocks
@@ -572,6 +583,52 @@ useDataAction({
         simulateAiReply(fileMsg.content);
       });
       input.click();
+    },
+
+    copyMessage(ev, el) {
+      // Find the message content from the parent AI message element
+      const aiWrapper = el.closest('.msg-ai');
+      if (!aiWrapper) return;
+      const contentEl = aiWrapper.querySelector('.msg-content');
+      if (!contentEl) return;
+
+      const text = contentEl.textContent || '';
+      navigator.clipboard.writeText(text).then(() => {
+        const icon = el.querySelector('i');
+        if (icon) {
+          icon.className = 'fa-regular fa-check text-xs';
+          icon.style.color = '#22c55e';
+          setTimeout(() => {
+            icon.className = 'fa-regular fa-copy text-xs';
+            icon.style.color = '';
+          }, 2000);
+        }
+      });
+    },
+
+    likeMessage(ev, el) {
+      const icon = el.querySelector('i');
+      // Toggle filled/regular thumbs-up
+      const isFilled = icon.classList.contains('fa-solid');
+      icon.className = isFilled ? 'fa-regular fa-thumbs-up text-xs' : 'fa-solid fa-thumbs-up text-xs';
+      // If disliking was active, reset it
+      const aiWrapper = el.closest('.msg-ai');
+      if (aiWrapper) {
+        const dislikeBtn = aiWrapper.querySelector('[data-action="dislikeMessage"] i');
+        if (dislikeBtn) dislikeBtn.className = 'fa-regular fa-thumbs-down text-xs';
+      }
+    },
+
+    dislikeMessage(ev, el) {
+      const icon = el.querySelector('i');
+      const isFilled = icon.classList.contains('fa-solid');
+      icon.className = isFilled ? 'fa-regular fa-thumbs-down text-xs' : 'fa-solid fa-thumbs-down text-xs';
+      // If liking was active, reset it
+      const aiWrapper = el.closest('.msg-ai');
+      if (aiWrapper) {
+        const likeBtn = aiWrapper.querySelector('[data-action="likeMessage"] i');
+        if (likeBtn) likeBtn.className = 'fa-regular fa-thumbs-up text-xs';
+      }
     },
   },
 });

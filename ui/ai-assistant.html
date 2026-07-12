@@ -134,6 +134,8 @@
 
   .msg-user { background: var(--bg-msg-user); border: 1px solid var(--border-msg-user); box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
   .msg-ai { background: var(--bg-msg-ai); border: 1px solid var(--border-msg-ai); box-shadow: var(--shadow-msg-ai); }
+  .msg-actions { opacity: 0; transition: opacity 0.15s; }
+  .msg-wrapper:hover .msg-actions { opacity: 1; }
 
   .conversation-item { transition: all 0.15s; }
   .conversation-item:hover { background: var(--bg-hover); }
