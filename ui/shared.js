@@ -253,6 +253,12 @@ function showWelcome(show) {
   const messages = refs.chatMessages;
   if (!welcome || !messages) return;
   welcome.style.display = show ? '' : 'none';
+
+  // 欢迎状态下整体垂直居中，避免底部输入框悬空
+  const main = messages.closest('main');
+  if (main) {
+    main.classList.toggle('justify-center', show);
+  }
 }
 
 function updateHeader() {
